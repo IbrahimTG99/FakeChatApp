@@ -4,13 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.readychatai.dev.ui.navigation.MyNavHost
+import com.readychatai.dev.ui.navigation.model.BottomBar
+import com.readychatai.dev.ui.navigation.model.BottomNavItem
 import com.readychatai.dev.ui.theme.ReadyChatTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +20,29 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ReadyChatTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                val navController = rememberNavController()
+                MainScreen(navController)
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ReadyChatTheme {
-        Greeting("Android")
+fun MainScreen(navController: NavHostController) {
+    val currentBackStackEntry = navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry.value?.destination?.route ?: BottomNavItem.Chat.route
+    Scaffold(
+        bottomBar = {
+            BottomBar(currentRoute) { navItem ->
+                if (currentRoute != navItem.route) {
+                    navController.navigate(navItem.route) {
+                        popUpTo(BottomNavItem.Chat.route) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            }
+        }
+    ) { paddingValues ->
+        MyNavHost(navController, paddingValues)
     }
 }
