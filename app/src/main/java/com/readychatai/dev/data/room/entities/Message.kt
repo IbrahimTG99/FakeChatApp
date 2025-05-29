@@ -21,5 +21,6 @@ data class Message(
     val content: String,
     val timestamp: Long,
     val sender: String,
-    val chatId: Int
+    val chatId: Int,
+    val isSender: Boolean = false,
 )

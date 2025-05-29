@@ -66,7 +66,7 @@ fun CategoryCard(
                     key = { index -> "${category.id}-${tags[index]}" }
                 ) { index ->
                     AssistChip(
-                        onClick = { },
+                        onClick = { onEditClick(category) },
                         label = {
                             Text(text = tags[index])
                         }

@@ -25,20 +25,21 @@ class ChatAppSharedViewModel(
         repository.insertChat(chat)
     }
 
-    fun addMessage(chatId: Int, content: String) {
+    fun addMessage(chatId: Int, content: String, isSender: Boolean) {
         viewModelScope.launch {
             val message = Message(
+                isSender = isSender,
                 chatId = chatId,
                 content = content,
                 timestamp = System.currentTimeMillis(),
-                sender = "You" // will be changed in future
+                sender = "You"
             )
             repository.insertMessage(message)
         }
     }
 
-    fun addCategory(category: Category) = viewModelScope.launch {
-        repository.insertCategory(category)
+    fun addOrUpdateCategory(category: Category) = viewModelScope.launch {
+        repository.insertOrUpdateCategory(category)
     }
 
     fun getMessagesForChat(chatId: Int): StateFlow<List<Message>> {

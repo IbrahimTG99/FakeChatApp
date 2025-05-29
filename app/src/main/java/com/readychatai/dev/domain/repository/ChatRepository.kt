@@ -11,7 +11,7 @@ interface ChatRepository {
 
     suspend fun insertChat(chat: Chat): Long
     suspend fun insertMessage(message: Message): Long
-    suspend fun insertCategory(category: Category): Long
+    suspend fun insertOrUpdateCategory(category: Category, isUpdate: Boolean = false): Long
 
     suspend fun getAllChats(): List<ChatWithMessagesAndCategories>
     fun getAllChatsFlow(): Flow<List<ChatWithMessagesAndCategories>>

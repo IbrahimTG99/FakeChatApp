@@ -14,19 +14,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,11 +50,13 @@ fun ChatOverlay(
     chatId: Int,
     viewModel: ChatAppSharedViewModel,
     onClose: () -> Unit,
-    onSendMessage: (String) -> Unit,
+    onSendMessage: (String, Boolean) -> Unit,
 ) {
 
     val messages by viewModel.getMessagesForChat(chatId).collectAsState()
     var messageText by remember { mutableStateOf("") }
+    var isSender by remember { mutableStateOf(true) }
+
 
     Box(
         modifier = Modifier
@@ -91,14 +97,30 @@ fun ChatOverlay(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(messages, key = { it.id }) { msg ->
-                        Text(
-                            text = msg.content,
-                            modifier = Modifier
-                                .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp))
-                                .padding(8.dp)
-                        )
+                        val isSender = msg.isSender
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = if (isSender) Arrangement.End else Arrangement.Start
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        color = if (isSender) Color(0xFF1976D2) else Color(0xFFE0E0E0),
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .padding(10.dp)
+                            ) {
+                                Text(
+                                    text = msg.content,
+                                    color = if (isSender) Color.White else Color.Black,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
                     }
                 }
+
 
                 // Input and send button
                 Row(
@@ -107,6 +129,10 @@ fun ChatOverlay(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Checkbox(
+                        checked = isSender,
+                        onCheckedChange = { isSender = it }
+                    )
                     TextField(
                         value = messageText,
                         onValueChange = { messageText = it },
@@ -117,7 +143,7 @@ fun ChatOverlay(
                     Button(
                         onClick = {
                             if (messageText.isNotBlank()) {
-                                onSendMessage(messageText)
+                                onSendMessage(messageText, isSender)
                                 messageText = ""
                             }
                         }

@@ -41,8 +41,11 @@ class ChatRepositoryImpl(
         return messageId
     }
 
-    override suspend fun insertCategory(category: Category): Long {
-        val categoryId = categoryDao.insert(category)
+    override suspend fun insertOrUpdateCategory(category: Category, isUpdate: Boolean): Long {
+        if(isUpdate) {
+            crossRefDao.deleteByCategoryId(category.id)
+        }
+        val categoryId = categoryDao.insertOrUpdate(category)
 
         // After inserting new category, scan all chats to categorize
         val allChats = chatDao.getAllChats()

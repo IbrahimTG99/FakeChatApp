@@ -17,4 +17,7 @@ interface ChatCategoryCrossRefDao {
 
     @Query("DELETE FROM ChatCategoryCrossRef WHERE chatId = :chatId AND categoryId = :categoryId")
     suspend fun delete(chatId: Int, categoryId: Int)
+
+    @Query("DELETE FROM ChatCategoryCrossRef WHERE categoryId = :categoryId")
+    suspend fun deleteByCategoryId(categoryId: Int)
 }

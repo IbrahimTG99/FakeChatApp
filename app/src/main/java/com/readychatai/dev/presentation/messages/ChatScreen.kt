@@ -40,13 +40,16 @@ import com.readychatai.dev.presentation.common.CategoryFilterRow
 import com.readychatai.dev.presentation.common.TopBar
 import com.readychatai.dev.presentation.main.BaseScreen
 import com.readychatai.dev.presentation.model.MessageCategory
-import com.readychatai.dev.presentation.model.MessageThread
+import com.readychatai.dev.presentation.model.ChatThread
 import com.readychatai.dev.presentation.ChatAppSharedViewModel
+import com.readychatai.dev.presentation.common.AddChatDialog
 import com.readychatai.dev.ui.theme.screenBackgroundColor
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ChatScreen(navController: NavHostController, viewModel: ChatAppSharedViewModel = koinViewModel()) {
+    var showAddDialog by remember { mutableStateOf(false) }
+
     BaseScreen(
         navController = navController,
         topBar = {
@@ -57,11 +60,7 @@ fun ChatScreen(navController: NavHostController, viewModel: ChatAppSharedViewMod
                 showAdd = true,
                 onSearchClick = { /* Handle search click */ },
                 onAddClick = {
-                    viewModel.addChat(
-                        Chat(
-                            title = "New Chat",
-                        )
-                    )
+                    showAddDialog = true
                 }
             )
         },
@@ -72,6 +71,15 @@ fun ChatScreen(navController: NavHostController, viewModel: ChatAppSharedViewMod
             categories,
             chats
         )
+        if (showAddDialog) {
+            AddChatDialog(
+                onDismiss = { showAddDialog = false },
+                onAddChat = { chatTitle ->
+                    viewModel.addChat(Chat(title = chatTitle))
+                    showAddDialog = false
+                }
+            )
+        }
     }
 }
 
@@ -83,10 +91,11 @@ fun ChatScreenContent(
 ) {
     val messageCategories = remember(categories) {
         buildList {
-            add(MessageCategory("all", "All", isActive = true))
-            addAll(categories.map { MessageCategory(it.name.lowercase(), it.name) })
+            add(MessageCategory(id = "all", label = "All", isActive = true))
+            addAll(categories.map { MessageCategory(it.id.toString(), it.name) })
         }
     }
+
 
     var selectedCategory by remember { mutableStateOf("all") }
     var selectedChat by remember { mutableStateOf<ChatWithMessagesAndCategories?>(null) }
@@ -110,20 +119,20 @@ fun ChatScreenContent(
                 val filteredThreads = remember(chats, selectedCategory) {
                     chats.filter { chat ->
                         selectedCategory == "all" ||
-                                chat.categories.any {
-                                    it.name.equals(selectedCategory, ignoreCase = true)
-                                }
+                                chat.categories.any { it.id.toString() == selectedCategory }
                     }.map { chat ->
                         val latestMessage = chat.messages.lastOrNull()
-                        MessageThread(
+                        ChatThread(
                             senderName = chat.chat.title,
                             message = latestMessage?.content.orEmpty(),
                             time = (latestMessage?.timestamp ?: "").toString(),
                             category = chat.categories.joinToString(", ") { it.name },
-                            id = chat.chat.id.toString()
+                            id = chat.chat.id.toString(),
+                            categoryIds = chat.categories.map { it.id.toString() },
                         )
                     }
                 }
+
 
                 MessageThreadsList(
                     threads = filteredThreads,
@@ -142,8 +151,8 @@ fun ChatScreenContent(
                     title = chat.chat.title,
                     chatId = chat.chat.id,
                     onClose = { selectedChat = null },
-                    onSendMessage = { msg ->
-                        viewModel.addMessage(chat.chat.id, msg)
+                    onSendMessage = { msg, isSender ->
+                        viewModel.addMessage(chat.chat.id, msg, isSender)
                     },
                     viewModel = viewModel,
                 )
@@ -154,14 +163,16 @@ fun ChatScreenContent(
 
 @Composable
 private fun MessageThreadsList(
-    threads: List<MessageThread>,
+    threads: List<ChatThread>,
     selectedCategory: String,
-    onThreadClick: (MessageThread) -> Unit,
+    onThreadClick: (ChatThread) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val filteredThreads = remember(threads, selectedCategory) {
         if (selectedCategory == "all") threads
-        else threads.filter { it.category.contains(selectedCategory, ignoreCase = true) }
+        else threads.filter { thread ->
+            thread.categoryIds.contains(selectedCategory)
+        }
     }
 
     LazyColumn(
@@ -179,7 +190,7 @@ private fun MessageThreadsList(
 
 @Composable
 private fun MessageThreadItem(
-    thread: MessageThread, onClick: () -> Unit, modifier: Modifier = Modifier
+    thread: ChatThread, onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier

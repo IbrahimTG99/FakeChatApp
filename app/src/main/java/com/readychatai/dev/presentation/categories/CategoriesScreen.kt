@@ -1,5 +1,6 @@
 package com.readychatai.dev.presentation.categories
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,14 +27,14 @@ import androidx.navigation.compose.rememberNavController
 import com.readychatai.dev.data.room.entities.Category
 import com.readychatai.dev.presentation.common.TopBar
 import com.readychatai.dev.presentation.main.BaseScreen
-import com.readychatai.dev.presentation.ChatAppSharedViewModel
 import com.readychatai.dev.ui.theme.screenBackgroundColor
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun CategoriesScreen(navController: NavHostController) {
-    val viewModel: ChatAppSharedViewModel = koinViewModel()
+    val viewModel: CategoriesViewModel = koinViewModel()
     var showDialog by remember { mutableStateOf(false) }
+    var selectedCategory by remember { mutableStateOf<Category?>(null) }
 
     BaseScreen(
         navController = navController,
@@ -45,22 +46,33 @@ fun CategoriesScreen(navController: NavHostController) {
             )
         },
     ) {
-        CategoriesScreenContent(viewModel = viewModel)
+        CategoriesScreenContent(viewModel = viewModel) {
+            selectedCategory = it
+            showDialog = true
+        }
     }
 
     if (showDialog) {
         AddCategoryDialog(
+            id = selectedCategory?.id ?: 0,
+            name = selectedCategory?.name.orEmpty(),
+            keywords = selectedCategory?.keywords?.let{
+                it.joinToString(",") {
+                    it.trim()
+                }}.orEmpty(),
             onDismiss = { showDialog = false },
             onAdd = { category ->
-                viewModel.addCategory(category)
+                viewModel.addOrUpdateCategory(category, selectedCategory != null)
+                selectedCategory = null
                 showDialog = false
+                Log.d("CategoryCard up", "Edit button clicked for category: ${category.name}")
             }
         )
     }
 }
 
 @Composable
-fun CategoriesScreenContent(viewModel: ChatAppSharedViewModel) {
+fun CategoriesScreenContent(viewModel: CategoriesViewModel, onEditClick: (Category) -> Unit) {
     val categories by viewModel.categories.collectAsState()
 
     LazyColumn(
@@ -74,7 +86,8 @@ fun CategoriesScreenContent(viewModel: ChatAppSharedViewModel) {
             CategoryCard(
                 category = category,
                 onEditClick = {
-                    // TODO: Implement edit dialog
+                    onEditClick(category)
+                    Log.d("CategoryCard", "Edit button clicked for category: ${category.name}")
                 }
             )
         }
@@ -83,11 +96,14 @@ fun CategoriesScreenContent(viewModel: ChatAppSharedViewModel) {
 
 @Composable
 fun AddCategoryDialog(
+    id: Int = 0,
+    name: String = "",
+    keywords: String = "",
     onDismiss: () -> Unit,
     onAdd: (Category) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var keywords by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf(name) }
+    var keywords by remember { mutableStateOf(keywords) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -111,7 +127,7 @@ fun AddCategoryDialog(
         confirmButton = {
             Button(onClick = {
                 val keywordSet = keywords.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
-                onAdd(Category(keywords = keywordSet.toList(), name = name))
+                onAdd(Category(id = id, keywords = keywordSet.toList(), name = name))
             }) {
                 Text("Add")
             }
