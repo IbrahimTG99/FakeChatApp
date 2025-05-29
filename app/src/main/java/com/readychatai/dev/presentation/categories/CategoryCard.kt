@@ -1,4 +1,4 @@
-package com.readychatai.dev.ui.screen.components
+package com.readychatai.dev.presentation.categories
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.readychatai.dev.domain.model.Category
+import com.readychatai.dev.data.room.entities.Category
 
 @Composable
 fun CategoryCard(
@@ -80,6 +80,6 @@ fun CategoryCard(
 @Preview(showBackground = true)
 @Composable
 fun CategoryCardPreview() {
-    val category = Category(setOf("family", "friends"), "Personal", 1)
+    val category = Category(keywords = listOf("family", "friends"), name = "Personal", id = 1)
     CategoryCard(category = category, {})
 }

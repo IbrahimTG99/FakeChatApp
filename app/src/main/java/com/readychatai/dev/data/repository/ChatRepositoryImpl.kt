@@ -11,6 +11,7 @@ import com.readychatai.dev.data.room.entities.Message
 import com.readychatai.dev.data.room.relations.ChatWithCategories
 import com.readychatai.dev.data.room.relations.ChatWithMessagesAndCategories
 import com.readychatai.dev.domain.repository.ChatRepository
+import kotlinx.coroutines.flow.Flow
 
 class ChatRepositoryImpl(
     private val chatDao: ChatDao,
@@ -65,15 +66,23 @@ class ChatRepositoryImpl(
         }
     }
 
+    override fun getAllChatsFlow(): Flow<List<ChatWithMessagesAndCategories>> {
+        return chatDao.getAllChatsWithMessagesAndCategoriesFlow()
+    }
+
+    override fun getMessagesForChatFlow(chatId: Int): Flow<List<Message>> {
+        return messageDao.getMessagesForChatFlow(chatId)
+    }
+
     override suspend fun getChatWithCategories(chatId: Int): ChatWithCategories {
         return chatDao.getChatWithCategories(chatId)
     }
 
-    override suspend fun getMessagesForChat(chatId: Int): List<Message> {
-        return messageDao.getMessagesForChat(chatId)
-    }
-
     override suspend fun getAllCategories(): List<Category> {
         return categoryDao.getAllCategories()
+    }
+
+    override fun getAllCategoriesFlow(): Flow<List<Category>> {
+        return categoryDao.getAllCategoriesFlow()
     }
 }

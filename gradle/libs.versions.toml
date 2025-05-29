@@ -15,6 +15,9 @@ hilt = "2.51.1"
 koin = "3.5.0"
 ksp = "2.0.21-1.0.27"
 
+kotlinSerialization = "2.1.20"
+serializationJson = "1.7.3"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -44,6 +47,10 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+
+#Navigation
+kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlinSerialization" }
+serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
