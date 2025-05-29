@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ReadyChat</string>
+    <string name="confirmation_required">Confirmation Required</string>
+    <string name="are_you_sure_you_want_to_proceed_with_this_action">Are you sure you want to proceed with this action?</string>
+    <string name="messages">Messages</string>
+    <string name="categories">Categories</string>
+    <string name="settings">Settings</string>
+</resources>
